@@ -1,0 +1,62 @@
+version: '3.6'
+
+services:
+  peatio:
+    build:
+      context: ./
+    depends_on:
+      - postgres
+      - proxy
+    expose:
+      - "3000"
+    volumes:
+      - ./config:/home/app/peatio/config
+    labels:
+      traefik.enable: true
+      traefik.frontend.rule: 'Host: peatio.krt.one'
+      traefik.port: 3000
+    command: bash -c "bin/init_config && bundle exec puma --config config/puma.rb"
+
+  proxy:
+    image: traefik
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/traefik.toml:/etc/traefik/traefik.toml:ro
+    networks:
+      default:
+        aliases:
+          - api.krt.one
+          - auth.krt.one
+          - ws.ranger.krt.one
+          - pma.krt.one
+          - eth.krt.one
+          - monitor.krt.one
+    labels:
+      traefik.enable: true
+      traefik.frontend.rule: 'Host: monitor.krt.one'
+      traefik.port: 8080
+
+  postgres:
+    image: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  graphql-engine:
+    image: hasura/graphql-engine:v1.0.0-alpha33
+    depends_on:
+      - "postgres"
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:@postgres:5432/postgres
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+    labels:
+      traefik.enable: true
+      traefik.frontend.rule: 'Host: hasura.krt.one'
+      traefik.port: 8080
+
+volumes:
+  db_data:
+
+
