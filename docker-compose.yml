@@ -7,15 +7,13 @@ services:
     depends_on:
       - postgres
       - proxy
-    expose:
-      - "3000"
     volumes:
       - ./config:/home/app/peatio/config
     labels:
       traefik.enable: true
       traefik.frontend.rule: 'Host: peatio.krt.one'
       traefik.port: 3000
-    command: bash -c "bin/init_config && bundle exec puma --config config/puma.rb"
+    command: bash -c "bin/init_config && bundle exec rails server"
 
   proxy:
     image: traefik

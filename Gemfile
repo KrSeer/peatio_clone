@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rails', '~> 4.0.12'
 gem 'rails-i18n'
+gem 'rake', '< 11.0'
 
 gem 'mysql2', '~> 0.3.21'
 gem 'pg', '~> 0.18'
